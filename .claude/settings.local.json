@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "WebFetch(domain:www.casestatusext.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.uscis.gov)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:developer.uscis.gov)",
+      "mcp__plugin_playwright_playwright__browser_close",
+      "WebFetch(domain:casestatusext.com)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm 2>&1)",
+      "Bash(rm -f /Users/alexsehlke/Desktop/Dev/uscistracker/cases-page.png && npx create-next-app@latest /Users/alexsehlke/Desktop/Dev/uscistracker --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm 2>&1)",
+      "Read(//private/tmp/**)",
+      "Bash(npx create-next-app@latest uscistracker-init --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
+      "Bash(cp -r /tmp/uscistracker-init/. /Users/alexsehlke/Desktop/Dev/uscistracker/ 2>&1 && ls /Users/alexsehlke/Desktop/Dev/uscistracker/)"
+    ]
+  }
+}
