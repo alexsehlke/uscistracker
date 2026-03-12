@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
             receipt_number: data.receiptNumber,
             form_type: data.formType ?? formType,
             service_center: serviceCenter,
-            status: data.caseStatus,
-            description: data.caseStatusDescription,
+            status: data.current_case_status_text_en,
+            description: data.current_case_status_desc_en,
             receipt_date: data.submittedDate ?? null,
             modified_date: data.modifiedDate ?? null,
             last_checked: new Date().toISOString(),
@@ -100,8 +100,8 @@ export async function POST(request: NextRequest) {
         .from("case_history")
         .insert({
           receipt_number: data.receiptNumber,
-          status: data.caseStatus,
-          description: data.caseStatusDescription,
+          status: data.current_case_status_text_en,
+          description: data.current_case_status_desc_en,
         });
 
       if (historyError) {
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         p_service_center: serviceCenter,
         p_receipt_block: receiptBlock,
         p_receipt_month: receiptMonth,
-        p_status: data.caseStatus,
+        p_status: data.current_case_status_text_en,
       });
 
       // If RPC doesn't exist yet, fall back to upsert
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
               service_center: serviceCenter,
               receipt_block: receiptBlock,
               receipt_month: receiptMonth,
-              status: data.caseStatus,
+              status: data.current_case_status_text_en,
               case_count: 1,
             },
             { onConflict: "snapshot_date,form_type,service_center,receipt_block,receipt_month,status" }
