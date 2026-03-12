@@ -27,7 +27,7 @@ export const FORM_CENTER_MAP: Record<string, string[]> = {
   "I-485": ["IOE-LB", "MSC-LB", "LIN-SC", "SRC-SC", "SRC-LB", "LIN-LB", "EAC-SC", "WAC-LB", "MSC-SC", "EAC-LB", "YSC-LB"],
   "I-765": ["IOE-LB", "MSC-LB", "LIN-SC", "SRC-SC", "YSC-LB", "WAC-LB"],
   "I-140": ["IOE-LB", "LIN-SC", "SRC-SC", "EAC-SC"],
-  "I-130": ["IOE-LB", "MSC-LB", "SRC-SC", "WAC-LB"],
+  "I-130": ["IOE-LB", "MSC-LB", "LIN-SC", "SRC-SC", "EAC-SC", "WAC-LB"],
   "I-131": ["IOE-LB", "MSC-LB", "LIN-SC", "SRC-SC"],
   "I-751": ["IOE-LB", "MSC-LB", "SRC-SC", "WAC-LB"],
   "I-129F": ["WAC-LB", "SRC-SC"],
