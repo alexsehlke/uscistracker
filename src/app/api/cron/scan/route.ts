@@ -5,7 +5,7 @@ import { getServiceCenterFromPrefix, getReceiptBlock } from "@/lib/uscis/receipt
 import { SERVICE_CENTERS, FORM_TYPES, FORM_CENTER_MAP } from "@/lib/constants";
 
 // Sandbox: 5 TPS / 1,000 daily — Production: 10 TPS / 400,000 daily
-const BATCH_SIZE = process.env.USCIS_API_ENV === "production" ? 200 : 5;
+const BATCH_SIZE = process.env.USCIS_API_ENV === "production" ? 200 : 50;
 const DELAY_MS = process.env.USCIS_API_ENV === "production" ? 110 : 250;
 
 // Starting sequence numbers per prefix
