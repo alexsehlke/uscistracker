@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("daily_snapshots")
-    .select(`${groupColumn}, status, case_count`)
+    .select("receipt_block, receipt_month, status, case_count")
     .eq("form_type", formType)
     .eq("service_center", serviceCenter)
     .eq("snapshot_date", latestRow.snapshot_date);
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
   // Pivot rows into BacklogDataPoint format: { label, [status]: count }
   const grouped = new Map<string, Record<string, string | number>>();
   for (const row of data ?? []) {
-    const label = row[groupColumn] ?? "Unknown";
+    const label = (groupColumn === "receipt_month" ? row.receipt_month : row.receipt_block) ?? "Unknown";
     if (!grouped.has(label)) {
       grouped.set(label, { label });
     }
