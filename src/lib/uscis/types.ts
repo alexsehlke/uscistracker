@@ -1,17 +1,24 @@
+export interface USCISApiResponse {
+  case_status: USCISApiCaseStatus;
+  message: string;
+}
+
 export interface USCISApiCaseStatus {
   receiptNumber: string;
-  caseStatus: string;
-  caseStatusDescription: string;
   formType: string;
   submittedDate?: string;
   modifiedDate?: string;
+  current_case_status_text_en: string;
+  current_case_status_desc_en: string;
+  current_case_status_text_es?: string;
+  current_case_status_desc_es?: string;
   hist_case_status?: USCISApiHistoryEntry[];
 }
 
 export interface USCISApiHistoryEntry {
   date: string;
-  status: string;
-  description: string;
+  completed_text_en: string;
+  completed_text_es?: string;
 }
 
 export interface USCISTokenResponse {

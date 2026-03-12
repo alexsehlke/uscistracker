@@ -1,4 +1,4 @@
-import type { USCISApiCaseStatus, USCISTokenResponse } from "./types";
+import type { USCISApiResponse, USCISApiCaseStatus, USCISTokenResponse } from "./types";
 import type { CaseWithHistory } from "@/types/case";
 import { mockCaseLookup } from "./mock-data";
 
@@ -53,7 +53,8 @@ export async function fetchCaseFromUSCIS(receiptNumber: string): Promise<USCISAp
     throw new Error(`USCIS API error: ${res.status}`);
   }
 
-  return res.json();
+  const json: USCISApiResponse = await res.json();
+  return json.case_status;
 }
 
 function mapApiResponse(data: USCISApiCaseStatus): CaseWithHistory {
@@ -61,13 +62,13 @@ function mapApiResponse(data: USCISApiCaseStatus): CaseWithHistory {
     receiptNumber: data.receiptNumber,
     formType: data.formType ?? "Unknown",
     serviceCenter: data.receiptNumber.slice(0, 3),
-    status: data.caseStatus,
-    description: data.caseStatusDescription,
+    status: data.current_case_status_text_en,
+    description: data.current_case_status_desc_en,
     receiptDate: data.submittedDate ?? null,
     modifiedDate: data.modifiedDate ?? null,
     history: (data.hist_case_status ?? []).map((h) => ({
-      status: h.status,
-      description: h.description,
+      status: h.completed_text_en,
+      description: h.completed_text_en,
       checkedAt: h.date,
     })),
   };
