@@ -8,16 +8,27 @@ import { SERVICE_CENTERS, FORM_TYPES, FORM_CENTER_MAP } from "@/lib/constants";
 const BATCH_SIZE = process.env.USCIS_API_ENV === "production" ? 200 : 5;
 const DELAY_MS = process.env.USCIS_API_ENV === "production" ? 110 : 250;
 
-// Starting sequence numbers per prefix (recent fiscal year ranges)
-const PREFIX_START_SEQUENCES: Record<string, number> = {
-  IOE: 9230000000,
-  MSC: 2390000000,
-  LIN: 2390000000,
-  SRC: 2390000000,
-  EAC: 2390000000,
-  WAC: 2390000000,
-  YSC: 2390000000,
-};
+// Starting sequence numbers per prefix
+// Sandbox test cases use 9999xxxxxx sequences; production uses recent fiscal year ranges
+const PREFIX_START_SEQUENCES: Record<string, number> = process.env.USCIS_API_ENV === "production"
+  ? {
+      IOE: 9230000000,
+      MSC: 2390000000,
+      LIN: 2390000000,
+      SRC: 2390000000,
+      EAC: 2390000000,
+      WAC: 2390000000,
+      YSC: 2390000000,
+    }
+  : {
+      EAC: 9999103400,
+      LIN: 9999106498,
+      SRC: 9999102777,
+      IOE: 9230000000,
+      MSC: 2390000000,
+      WAC: 2390000000,
+      YSC: 2390000000,
+    };
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
