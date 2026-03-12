@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("cases")
-    .select(`receipt_number, ${groupBy === "receipt_month" ? "receipt_date" : "receipt_number"}`)
+    .select("receipt_number, receipt_date")
     .eq("form_type", formType)
     .eq("service_center", serviceCenter)
     .gte("modified_date", sevenDaysAgo.toISOString());
