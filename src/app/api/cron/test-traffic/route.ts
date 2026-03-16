@@ -34,18 +34,27 @@ export async function GET(request: NextRequest) {
   }
 
   const results = { success: 0, errors_4xx: 0, errors_other: 0, total: 0 };
+  let consecutive503s = 0;
+  const MAX_CONSECUTIVE_503S = 3;
 
   // Look up valid sandbox cases (expect 200s)
   for (const receipt of SANDBOX_CASES) {
     try {
       await fetchCaseFromUSCIS(receipt);
       results.success++;
+      consecutive503s = 0;
     } catch (error) {
       const msg = error instanceof Error ? error.message : "";
       if (msg.includes("429")) {
-        // Rate limited — stop early
         results.total = results.success + results.errors_4xx + results.errors_other;
         return NextResponse.json({ ...results, stoppedEarly: "rate_limited" });
+      }
+      if (msg.includes("503")) {
+        consecutive503s++;
+        if (consecutive503s >= MAX_CONSECUTIVE_503S) {
+          results.total = results.success + results.errors_4xx + results.errors_other;
+          return NextResponse.json({ ...results, stoppedEarly: "api_unavailable" });
+        }
       }
       results.errors_other++;
     }

@@ -71,6 +71,8 @@ export async function GET(request: NextRequest) {
 
   // Scan a batch of sequential receipt numbers
   let lastSuccessfulReceipt = "";
+  let consecutive503s = 0;
+  const MAX_CONSECUTIVE_503S = 5;
 
   for (let i = 0; i < BATCH_SIZE; i++) {
     const sequence = startSequence + i;
@@ -152,18 +154,28 @@ export async function GET(request: NextRequest) {
 
       lastSuccessfulReceipt = receiptNumber;
       totalUpserted++;
+      consecutive503s = 0;
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Unknown error";
       // 404 = receipt not found, skip silently
       if (msg.includes("404")) {
         totalScanned++;
         lastSuccessfulReceipt = receiptNumber;
+        consecutive503s = 0;
         continue;
       }
       // 429 = rate limited, stop the batch
       if (msg.includes("429")) {
         errors.push(`Rate limited at ${receiptNumber}`);
         break;
+      }
+      // 503 = API unavailable (likely outside business hours), bail early
+      if (msg.includes("503")) {
+        consecutive503s++;
+        if (consecutive503s >= MAX_CONSECUTIVE_503S) {
+          errors.push(`API unavailable (${MAX_CONSECUTIVE_503S} consecutive 503s), stopping batch`);
+          break;
+        }
       }
       errors.push(`${receiptNumber}: ${msg}`);
     }
