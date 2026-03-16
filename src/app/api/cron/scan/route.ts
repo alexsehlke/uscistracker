@@ -202,6 +202,7 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({
+    ran_at: new Date().toISOString(),
     pair: `${centerId}/${formType}`,
     scanned: totalScanned,
     upserted: totalUpserted,

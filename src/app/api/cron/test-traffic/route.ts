@@ -47,13 +47,13 @@ export async function GET(request: NextRequest) {
       const msg = error instanceof Error ? error.message : "";
       if (msg.includes("429")) {
         results.total = results.success + results.errors_4xx + results.errors_other;
-        return NextResponse.json({ ...results, stoppedEarly: "rate_limited" });
+        return NextResponse.json({ ran_at: new Date().toISOString(), ...results, stoppedEarly: "rate_limited" });
       }
       if (msg.includes("503")) {
         consecutive503s++;
         if (consecutive503s >= MAX_CONSECUTIVE_503S) {
           results.total = results.success + results.errors_4xx + results.errors_other;
-          return NextResponse.json({ ...results, stoppedEarly: "api_unavailable" });
+          return NextResponse.json({ ran_at: new Date().toISOString(), ...results, stoppedEarly: "api_unavailable" });
         }
       }
       results.errors_other++;
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       const msg = error instanceof Error ? error.message : "";
       if (msg.includes("429")) {
         results.total = results.success + results.errors_4xx + results.errors_other;
-        return NextResponse.json({ ...results, stoppedEarly: "rate_limited" });
+        return NextResponse.json({ ran_at: new Date().toISOString(), ...results, stoppedEarly: "rate_limited" });
       }
       if (msg.includes("404") || msg.includes("422")) {
         results.errors_4xx++;
@@ -83,5 +83,5 @@ export async function GET(request: NextRequest) {
     await sleep(DELAY_MS);
   }
 
-  return NextResponse.json(results);
+  return NextResponse.json({ ran_at: new Date().toISOString(), ...results });
 }
