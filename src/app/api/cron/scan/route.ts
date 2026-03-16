@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const startTime = Date.now();
   const supabase = createAdminClient();
   let totalScanned = 0;
   let totalUpserted = 0;
@@ -201,14 +202,25 @@ export async function GET(request: NextRequest) {
       );
   }
 
-  return NextResponse.json({
+  const result = {
     ran_at: new Date().toISOString(),
     pair: `${centerId}/${formType}`,
     scanned: totalScanned,
     upserted: totalUpserted,
     lastReceipt: lastSuccessfulReceipt || null,
     errors: errors.length > 0 ? errors : undefined,
+  };
+
+  // Log to cron_logs
+  await supabase.from("cron_logs").insert({
+    job: "scan",
+    ran_at: result.ran_at,
+    duration_ms: Date.now() - startTime,
+    result,
+    success: errors.length === 0,
   });
+
+  return NextResponse.json(result);
 }
 
 /**

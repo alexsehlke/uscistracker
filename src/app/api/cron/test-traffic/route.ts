@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { fetchCaseFromUSCIS } from "@/lib/uscis/api";
 
 const SANDBOX_CASES = [
@@ -33,9 +34,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const startTime = Date.now();
+  const supabase = createAdminClient();
   const results = { success: 0, errors_4xx: 0, errors_other: 0, total: 0 };
   let consecutive503s = 0;
   const MAX_CONSECUTIVE_503S = 3;
+  let stoppedEarly: string | undefined;
 
   // Look up valid sandbox cases (expect 200s)
   for (const receipt of SANDBOX_CASES) {
@@ -47,13 +51,15 @@ export async function GET(request: NextRequest) {
       const msg = error instanceof Error ? error.message : "";
       if (msg.includes("429")) {
         results.total = results.success + results.errors_4xx + results.errors_other;
-        return NextResponse.json({ ran_at: new Date().toISOString(), ...results, stoppedEarly: "rate_limited" });
+        stoppedEarly = "rate_limited";
+        break;
       }
       if (msg.includes("503")) {
         consecutive503s++;
         if (consecutive503s >= MAX_CONSECUTIVE_503S) {
           results.total = results.success + results.errors_4xx + results.errors_other;
-          return NextResponse.json({ ran_at: new Date().toISOString(), ...results, stoppedEarly: "api_unavailable" });
+          stoppedEarly = "api_unavailable";
+          break;
         }
       }
       results.errors_other++;
@@ -63,25 +69,43 @@ export async function GET(request: NextRequest) {
   }
 
   // Look up invalid cases (expect 4xx responses)
-  for (const receipt of INVALID_CASES) {
-    try {
-      await fetchCaseFromUSCIS(receipt);
-      results.success++;
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : "";
-      if (msg.includes("429")) {
-        results.total = results.success + results.errors_4xx + results.errors_other;
-        return NextResponse.json({ ran_at: new Date().toISOString(), ...results, stoppedEarly: "rate_limited" });
+  if (!stoppedEarly) {
+    for (const receipt of INVALID_CASES) {
+      try {
+        await fetchCaseFromUSCIS(receipt);
+        results.success++;
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : "";
+        if (msg.includes("429")) {
+          results.total = results.success + results.errors_4xx + results.errors_other;
+          stoppedEarly = "rate_limited";
+          break;
+        }
+        if (msg.includes("404") || msg.includes("422")) {
+          results.errors_4xx++;
+        } else {
+          results.errors_other++;
+        }
       }
-      if (msg.includes("404") || msg.includes("422")) {
-        results.errors_4xx++;
-      } else {
-        results.errors_other++;
-      }
+      results.total++;
+      await sleep(DELAY_MS);
     }
-    results.total++;
-    await sleep(DELAY_MS);
   }
 
-  return NextResponse.json({ ran_at: new Date().toISOString(), ...results });
+  const result = {
+    ran_at: new Date().toISOString(),
+    ...results,
+    ...(stoppedEarly ? { stoppedEarly } : {}),
+  };
+
+  // Log to cron_logs
+  await supabase.from("cron_logs").insert({
+    job: "test-traffic",
+    ran_at: result.ran_at,
+    duration_ms: Date.now() - startTime,
+    result,
+    success: results.errors_other === 0 && !stoppedEarly,
+  });
+
+  return NextResponse.json(result);
 }
